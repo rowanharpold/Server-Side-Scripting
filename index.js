@@ -31,30 +31,75 @@ app.get("/api/courses/:id", (req, res) => {
 // });
 
 
-//adds a item
+
 app.post("/api/courses", (req, res) => {
-    const schema = Joi.object({
-        name: Joi.string()
-            .min(3)
-            .required()
-    });
-    console.log(Joi);
-    const result = schema.validate(req.body, schema);
+    const schema ={
+        name: Joi.string().min(3).required()
+    };
+    const result = Joi.validate(req.body, schema);
 
-    console.log(result)
-
-    if (!req.body.name || req.body.name.length < 3){
-        //400 bad request
-        res.status(400).send("Name is required and should be minimum 3 characters.")
-        return;
-    }
+    // if (!req.body.name || req.body.name.length < 3){
+    //     //400 bad request
+    //     res.status(400).send("Name is required and should be minimum 3 characters.")
+    //     return;
+    // }
+    if(result.error) return res.status(400).send(result.error.details[0].message);
+    
     const course = {
-        id: course.length + 1,
+        id: courses.length + 1,
         name: req.body.name
     }
     courses.push(course)
     res.send(courses)
 });
+
+
+
+//add a item
+app.put("/api/courses/:id", (req, res) =>{
+//look up course
+    let course = courses.find(c => c.id === parseInt(req.params.id));
+// return 404 if doesnt exist
+    if(!course){
+        res.status(404).send("This course with the given ID was not found!!")
+    }
+
+//validate
+    const schema ={
+        name: Joi.string().min(3).required()
+    };
+    const result = Joi.validate(req.body, schema);
+// if invalid return 400 - bad request
+    if(result.error){
+        res.status(400).send(result.error.details[0].message);
+        return;
+    }
+
+//update the courses
+    course.name = req.body.name
+//return the updated course
+    res.send(course);
+});
+
+function validateCourse(course){
+
+}
+
+//delete request
+app.delete("/api/courses/:id", (req, res) => {
+    //look up the course
+    let course = courses.find(c => c.id === parseInt(req.params.id));
+    //not exisiting return 404
+    if(!course){
+        res.status(404).send("This course with the given ID was not found!!")
+    }
+    //delete
+    const index = courses.indexOf(course)
+    courses.splice(index, 1);
+    //return the same course
+    res.send(course)
+});
+
 
 // PORT
 const port = process.env.PORT || 3000
@@ -64,3 +109,4 @@ app.listen(port, () => console.log("Listenign on port "+port+"..."))
 
 //(Cntrl + C) stop task
 //(npm run serve) run it
+//thunderclient
